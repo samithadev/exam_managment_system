@@ -5,8 +5,8 @@ import "./index.css";
 import RootLayout from "./layouts/root.layout";
 import RegisterPage from "./pages/register/register.page";
 import LoginPage from "./pages/login/login.page";
-import StudentDash from "./pages/stdDashboard/studentDash.page";
-import TeacherDash from "./pages/teacherDashboard/teacherDash.page";
+import StudentDash from "./pages/student/stdDashboard/studentDash.page";
+import TeacherDash from "./pages/teacher/teacherDashboard/teacherDash.page";
 
 const router = createBrowserRouter([
   {

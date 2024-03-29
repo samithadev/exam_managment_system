@@ -1,11 +1,9 @@
 import React from "react";
-import LogoutButton from "./components/LogOut";
 
 function StudentDash() {
   return (
     <div>
-      <h1>Student dashboard</h1>
-      <LogoutButton />
+      <h1>Student Dashboard</h1>
     </div>
   );
 }
