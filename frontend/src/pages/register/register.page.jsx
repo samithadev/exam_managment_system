@@ -1,0 +1,82 @@
+import React, { useState } from "react";
+import axios from "axios";
+
+function RegisterPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [roleName, setRoleName] = useState("student");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post("http://localhost:8000/user", {
+        email,
+        password,
+        roleName,
+      });
+      console.log(response.data);
+      // Handle success, e.g., show a success message or redirect
+      alert("User registered successfully!");
+    } catch (error) {
+      console.error("Error creating user:", error.response.data);
+      // Handle error, e.g., show an error message
+      alert("error register");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center w-screen h-screen">
+      <div className="border-solid border-4 p-20 ">
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="email">Email Address</label>
+          <br />
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className=" my-4 border-solid border-2 p-2"
+            placeholder="Email Address"
+            required
+          />
+          <br />
+          <label htmlFor="password">Password</label>
+          <br />
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className=" my-4 border-solid border-2 p-2"
+            placeholder="Password"
+            required
+          />
+          <br />
+
+          <label htmlFor="role">Role: </label>
+          <select
+            id="role"
+            value={roleName}
+            onChange={(e) => setRoleName(e.target.value)}
+            className=" my-4 p-2"
+            required
+          >
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+          <br />
+
+          <button
+            type="submit"
+            className=" p-2 bg-red-600 text-white rounded-lg w-full my-4"
+          >
+            Register
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default RegisterPage;
