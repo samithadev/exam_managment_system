@@ -7,6 +7,9 @@ import RegisterPage from "./pages/register/register.page";
 import LoginPage from "./pages/login/login.page";
 import StudentDash from "./pages/student/stdDashboard/studentDash.page";
 import TeacherDash from "./pages/teacher/teacherDashboard/teacherDash.page";
+import StudentLayout from "./layouts/student.layout";
+import TeacherLayout from "./layouts/teacher.layout";
+import CreateExam from "./pages/teacher/createExam/createExam.page";
 
 const router = createBrowserRouter([
   {
@@ -21,12 +24,28 @@ const router = createBrowserRouter([
         element: <LoginPage />,
       },
       {
-        path: "/student_dashboard",
-        element: <StudentDash />,
+        path: "student",
+        element: <StudentLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: <StudentDash />,
+          },
+        ],
       },
       {
-        path: "/teacher_dashboard",
-        element: <TeacherDash />,
+        path: "teacher",
+        element: <TeacherLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: <TeacherDash />,
+          },
+          {
+            path: "create_exam",
+            element: <CreateExam />,
+          },
+        ],
       },
     ],
   },

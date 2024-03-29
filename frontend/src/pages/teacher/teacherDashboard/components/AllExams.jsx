@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import LogoutButton from "./LogOut";
+import { Link } from "react-router-dom";
 
 function AllExams() {
   const [exams, setExams] = useState([]);
@@ -55,11 +56,8 @@ function AllExams() {
           </div>
 
           <div className=" flex gap-6">
-            <button
-              onClick={handleSearch}
-              className="p-2 bg-green-300 text-white rounded-lg"
-            >
-              New Exam
+            <button className="p-2 bg-green-300 text-white rounded-lg">
+              <Link to="/teacher/create_exam">New Exam</Link>
             </button>
             <LogoutButton />
           </div>

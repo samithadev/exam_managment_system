@@ -26,9 +26,9 @@ function LoginPage() {
 
       // Redirect based on user role
       if (role === 1) {
-        navigate("/teacher_dashboard"); // Navigate to teacher dashboard
+        navigate("/teacher/dashboard"); // Navigate to teacher dashboard
       } else if (role === 2) {
-        navigate("/student_dashboard"); // Navigate to student dashboard
+        navigate("/student/dashboard"); // Navigate to student dashboard
       }
       console.log(response.data);
       // Handle successful login, e.g., redirect to dashboard
