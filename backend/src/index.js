@@ -5,6 +5,7 @@ const userRouter = require('./api/user');
 const roleRouter = require('./api/role');
 const sql_connection = require('./db/db');
 const examRouter = require('./api/exam');
+const questionRouter = require('./api/question');
 
 const app = express();
 app.use(express.json());
@@ -34,5 +35,6 @@ connectDB();
 app.use("/user", userRouter)
 app.use("/role", roleRouter)
 app.use("/exam", examRouter)
+app.use('/question', questionRouter)
 
 app.listen(8000, ()=> console.log("Server is listening on port 8000."))

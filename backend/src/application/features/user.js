@@ -95,7 +95,7 @@ const loginUser = async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ email: user.email, role:user.role }, process.env.JWT_SECRET_KEY);
+        const token = jwt.sign({userId:user.user_id , email: user.email, role:user.role }, process.env.JWT_SECRET_KEY);
 
         return res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
