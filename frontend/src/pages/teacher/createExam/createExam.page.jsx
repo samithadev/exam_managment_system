@@ -1,11 +1,12 @@
 import React from "react";
+import CreateExam from "./components/CreateExam";
 
-function CreateExam() {
+function CreateExamPage() {
   return (
     <div>
-      <h1>create exam</h1>
+      <CreateExam />
     </div>
   );
 }
 
-export default CreateExam;
+export default CreateExamPage;

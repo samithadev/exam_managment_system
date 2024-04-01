@@ -9,7 +9,7 @@ import StudentDash from "./pages/student/stdDashboard/studentDash.page";
 import TeacherDash from "./pages/teacher/teacherDashboard/teacherDash.page";
 import StudentLayout from "./layouts/student.layout";
 import TeacherLayout from "./layouts/teacher.layout";
-import CreateExam from "./pages/teacher/createExam/createExam.page";
+import CreateExamPage from "./pages/teacher/createExam/createExam.page";
 
 const router = createBrowserRouter([
   {
@@ -43,7 +43,7 @@ const router = createBrowserRouter([
           },
           {
             path: "create_exam",
-            element: <CreateExam />,
+            element: <CreateExamPage />,
           },
         ],
       },
