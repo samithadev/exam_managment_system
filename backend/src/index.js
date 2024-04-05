@@ -1,22 +1,16 @@
 const express = require('express');
 const cors = require('cors');
-// var mysql = require('mysql');
 const userRouter = require('./api/user');
 const roleRouter = require('./api/role');
 const sql_connection = require('./db/db');
 const examRouter = require('./api/exam');
 const questionRouter = require('./api/question');
+const answerRouter = require('./api/answers');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// var sql_connection = mysql.createConnection({
-//     host:'localhost',
-//     user:'root',
-//     password:'root',
-//     database:'ems_db'
-// })
 
 const connectDB = async () => {
     try{
@@ -36,5 +30,6 @@ app.use("/user", userRouter)
 app.use("/role", roleRouter)
 app.use("/exam", examRouter)
 app.use('/question', questionRouter)
+app.use('/answers',answerRouter )
 
 app.listen(8000, ()=> console.log("Server is listening on port 8000."))
