@@ -10,6 +10,8 @@ import TeacherDash from "./pages/teacher/teacherDashboard/teacherDash.page";
 import StudentLayout from "./layouts/student.layout";
 import TeacherLayout from "./layouts/teacher.layout";
 import CreateExamPage from "./pages/teacher/createExam/createExam.page";
+import ExamViewPage from "./pages/student/examView/examView.page";
+import Exams from "./pages/student/stdDashboard/components/Exams";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +32,10 @@ const router = createBrowserRouter([
           {
             path: "dashboard",
             element: <StudentDash />,
+          },
+          {
+            path: "exam/:id",
+            element: <ExamViewPage />,
           },
         ],
       },

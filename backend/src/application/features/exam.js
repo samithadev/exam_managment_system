@@ -4,7 +4,7 @@ const sql_connection = require("../../db/db");
 
 const createExam = async (req, res) => {
     try {
-      const { exam_name, duration, createDate, status, questions } = req.body;
+      const { exam_name, duration, examDate, status, questions } = req.body;
   
       // Get user's email from JWT token
       const token = req.headers.authorization.split(" ")[1];
@@ -37,7 +37,7 @@ const createExam = async (req, res) => {
       const newExam = {
         exam_name,
         duration,
-        createDate,
+        examDate,
         status,
         createdUser: user.user_id,
       };
@@ -100,7 +100,7 @@ const createExam = async (req, res) => {
     }
   };
 
-const allExams = async (req, res) => {
+const teacherAllExams = async (req, res) => {
   try {
     // Get user's email from JWT token
     const token = req.headers.authorization.split(" ")[1];
@@ -148,6 +148,29 @@ const allExams = async (req, res) => {
   }
 };
 
+//Get all exams
+const allExams = async (req,res) => {
+  try{
+    // Fetch all exams from the database
+    const allExams = await new Promise((resolve, reject) => {
+      sql_connection.query(
+        "SELECT * FROM exam",
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+    res.status(200).json(allExams);
+
+  } catch{
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 const deleteExam = async (req, res) => {
     try {
       const { examId } = req.params;
@@ -188,9 +211,8 @@ const deleteExam = async (req, res) => {
   
       res.status(200).json({ message: "Exam deleted successfully" });
     } catch (error) {
-      console.error("Error deleting exam:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   };
 
-module.exports = { createExam, allExams, deleteExam };
+module.exports = { createExam, teacherAllExams, deleteExam ,allExams};

@@ -65,7 +65,7 @@ function CreateExam() {
         body: JSON.stringify({
           exam_name: examName,
           duration: duration,
-          createDate: date,
+          examDate: date,
           status: "published",
           questions: formattedQuestions,
         }),
@@ -108,7 +108,7 @@ function CreateExam() {
       </div>
       <div className="mt-4">
         <label htmlFor="date" className="block">
-          Date
+          Exam Date
         </label>
         <input
           type="date"
