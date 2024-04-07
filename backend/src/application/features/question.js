@@ -22,7 +22,7 @@ const getQuestion = async (req, res) => {
             return res.status(404).json({ message: "questions not found" });
         }
 
-        res.status(200).json({ data: questions });
+        res.status(200).json(questions);
     } catch (error) {
         console.error("Error fetching exam:", error);
         res.status(500).json({ message: "Internal server error" });
