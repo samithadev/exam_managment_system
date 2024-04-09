@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 function ExamView() {
   const { id: examId } = useParams();
@@ -10,6 +10,8 @@ function ExamView() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [userId, setUserId] = useState();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Decode the token to get userId
@@ -60,32 +62,28 @@ function ExamView() {
     }));
   };
 
-  const handleComplete = async () => {
+  const handleSave = async () => {
     try {
-      const studentAnswers = [];
-      for (const questionId in selectedAnswers) {
-        studentAnswers.push({
-          userId,
-          examId,
-          questionId,
-          answerId: selectedAnswers[questionId],
-          ansStatus: "pending",
-        });
-      }
-      console.log(studentAnswers);
+      // Update the status in the exam_enrollment table to 'pending'
+      await axios.post(`http://localhost:8000/examenroll/${userId}/${examId}`, {
+        status: "pending",
+      });
 
-      await axios.post("http://localhost:8000/studentAnswers", studentAnswers);
+      alert("Answers Saved!");
+      navigate(`/student/dashboard`);
     } catch (error) {
       console.error("Error submitting answers:", error);
     }
   };
 
+  const handleComplete = (req, res) => {};
+
   return (
-    <div>
+    <div className=" flex flex-col items-center justify-center h-screen">
       <h1>Exam View</h1>
       {questions.length > 0 && (
         <div>
-          <h2>Question {currentQuestionIndex + 1}:</h2>
+          <h2 className=" text-xl">Question {currentQuestionIndex + 1}:</h2>
           <p>{questions[currentQuestionIndex].question}</p>
           <h3>Answers:</h3>
           <ul>
@@ -113,19 +111,31 @@ function ExamView() {
                 </li>
               ))}
           </ul>
-          <button
-            onClick={handlePreviousQuestion}
-            disabled={currentQuestionIndex === 0}
-          >
-            Back
-          </button>
-          <button
-            onClick={handleNextQuestion}
-            disabled={currentQuestionIndex === questions.length - 1}
-          >
-            Next
-          </button>
-          <button onClick={handleComplete}>Complete</button>
+          <div className="flex w-full gap-5 text-white mt-3">
+            <button
+              onClick={handlePreviousQuestion}
+              disabled={currentQuestionIndex === 0}
+              className=" px-5 py-2 bg-slate-400 "
+            >
+              Back
+            </button>
+            <button
+              onClick={handleNextQuestion}
+              disabled={currentQuestionIndex === questions.length - 1}
+              className=" px-5 py-2 bg-slate-400 "
+            >
+              Next
+            </button>
+            <button onClick={handleSave} className=" px-5 py-2 bg-slate-800 ">
+              Save
+            </button>
+            <button
+              onClick={handleComplete}
+              className=" px-5 py-2 bg-green-500 "
+            >
+              Complete
+            </button>
+          </div>
         </div>
       )}
     </div>

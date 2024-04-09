@@ -171,6 +171,25 @@ const allExams = async (req,res) => {
   }
 }
 
+//get exam enroll status
+const getEnrollStatus = async (req,res) => {
+  try {
+    const { examId, userId } = req.params;
+
+    // Query the database to get the enrollment status for the specified examId and userId
+    const query = `SELECT enrollStatus FROM exam_enrollment WHERE examId = ? AND userId = ?`;
+    const [rows] = await sql_connection.query(query, [examId, userId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Enrollment not found" });
+    }
+
+    res.json({ enrollStatus: rows[0].enrollStatus });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 const deleteExam = async (req, res) => {
     try {
       const { examId } = req.params;
@@ -215,4 +234,4 @@ const deleteExam = async (req, res) => {
     }
   };
 
-module.exports = { createExam, teacherAllExams, deleteExam ,allExams};
+module.exports = { createExam, teacherAllExams, deleteExam ,allExams, getEnrollStatus};

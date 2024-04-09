@@ -2,28 +2,49 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import LogoutButton from "./LogOut";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function Exams() {
   const [exams, setExams] = useState([]);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredExams, setFilteredExams] = useState([]);
+  const [userId, setUserId] = useState();
+  const [enrollmentStatus, setEnrollmentStatus] = useState({});
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchExams = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserId(decodedToken.userId);
+    }
+
+    const fetchExamsAndStatus = async () => {
       try {
         const response = await axios.get("http://localhost:8000/exam/allExams");
         setExams(response.data);
         setFilteredExams(response.data);
+
+        const statusPromises = response.data.map((exam) =>
+          axios.get(
+            `http://localhost:8000/exam/${exam.exam_id}/enrollment/${userId}`
+          )
+        );
+        const statuses = await Promise.all(statusPromises);
+        const enrollmentStatuses = {};
+        statuses.forEach((status, index) => {
+          enrollmentStatuses[response.data[index].exam_id] =
+            status.data.enrollStatus;
+        });
+        setEnrollmentStatus(enrollmentStatuses);
       } catch (error) {
-        console.error("Error fetching exams:", error);
+        console.log("no fetching exams and enrollment statuses:");
       }
     };
 
-    fetchExams();
-  }, []);
+    fetchExamsAndStatus();
+  }, [userId]);
 
   const handleSearch = () => {
     setFilteredExams(
@@ -34,7 +55,24 @@ function Exams() {
   };
 
   const handleExamClick = (examId) => {
-    navigate(`/student/exam/${examId}`);
+    const confirmEnroll = window.confirm(
+      "Are you sure you want to enroll in this exam?"
+    );
+    if (confirmEnroll) {
+      enrollUser(examId);
+    }
+  };
+
+  const enrollUser = async (examId) => {
+    try {
+      await axios.post(`http://localhost:8000/examenroll/${userId}/${examId}`, {
+        status: "pending",
+      });
+
+      navigate(`/student/exam/${examId}`);
+    } catch (error) {
+      console.error("Error enrolling in exam:", error);
+    }
   };
 
   return (
@@ -83,7 +121,9 @@ function Exams() {
                   {exam.createDate}
                 </td>
                 <td className=" border-solid border-2 p-3">{exam.duration}</td>
-                <td className=" border-solid border-2 p-3">{exam.status}</td>
+                <td className=" border-solid border-2 p-3">
+                  {enrollmentStatus[exam.exam_id]}
+                </td>
               </tr>
             ))}
           </tbody>

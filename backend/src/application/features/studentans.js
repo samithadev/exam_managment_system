@@ -9,7 +9,7 @@ const createUserAnswer = async (req, res) => {
   const query = 'INSERT INTO studentanswers (userId, examId, questionId, answerId, ansStatus) VALUES ?';
   const values = studentAnswers.map(answer => [answer.userId, answer.examId, answer.questionId, answer.answerId, answer.ansStatus]);
 
-  sql_connection.query(query, [values], (error, results, fields) => {
+  sql_connection.query(query, [values], (error) => {
     if (error) {
       console.error('Error inserting student answers:', error);
       res.status(500).json({ error: 'Failed to insert student answers' });
