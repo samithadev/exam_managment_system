@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import LogoutButton from "./LogOut";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function AllExams() {
   const [exams, setExams] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredExams, setFilteredExams] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchExams = async () => {
@@ -33,6 +35,16 @@ function AllExams() {
         exam.exam_name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
+  };
+
+  const handleExamClick = (examId, status) => {
+    if (status === "draft") {
+      const exam = exams.find((exam) => exam.exam_id === examId);
+      navigate("/teacher/create_exam", { state: { exam } });
+      console.log(exam);
+    } else {
+      navigate(`/teacher/monitorexam/${examId}`);
+    }
   };
 
   return (
@@ -73,11 +85,13 @@ function AllExams() {
           </thead>
           <tbody>
             {filteredExams.map((exam) => (
-              <tr key={exam.exam_id}>
+              <tr
+                key={exam.exam_id}
+                onClick={() => handleExamClick(exam.exam_id, exam.status)}
+                className=" cursor-pointer hover:bg-slate-200"
+              >
                 <td className=" border-solid border-2 p-3">{exam.exam_name}</td>
-                <td className=" border-solid border-2 p-3">
-                  {exam.createDate}
-                </td>
+                <td className=" border-solid border-2 p-3">{exam.examDate}</td>
                 <td className=" border-solid border-2 p-3">{exam.status}</td>
               </tr>
             ))}

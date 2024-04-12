@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+import { useNavigate } from "react-router-dom";
+
 function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [roleName, setRoleName] = useState("student");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,6 +26,10 @@ function RegisterPage() {
       // Handle error, e.g., show an error message
       alert("error register");
     }
+  };
+
+  const handleLoginClick = () => {
+    navigate("/");
   };
 
   return (
@@ -72,6 +79,12 @@ function RegisterPage() {
             className=" p-2 bg-red-600 text-white rounded-lg w-full my-4"
           >
             Register
+          </button>
+          <button
+            onClick={handleLoginClick}
+            className=" p-2 bg-slate-500 text-white rounded-lg w-full"
+          >
+            Login
           </button>
         </form>
       </div>

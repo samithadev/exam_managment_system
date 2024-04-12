@@ -12,6 +12,8 @@ import TeacherLayout from "./layouts/teacher.layout";
 import CreateExamPage from "./pages/teacher/createExam/createExam.page";
 import ExamViewPage from "./pages/student/examView/examView.page";
 import Exams from "./pages/student/stdDashboard/components/Exams";
+import MonitorExamPage from "./pages/teacher/monitorExam/monitorExam.page";
+import ResultViewPage from "./pages/student/resultView/resultView.page";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +39,10 @@ const router = createBrowserRouter([
             path: "exam/:id",
             element: <ExamViewPage />,
           },
+          {
+            path: "resultview/:id",
+            element: <ResultViewPage />,
+          },
         ],
       },
       {
@@ -50,6 +56,10 @@ const router = createBrowserRouter([
           {
             path: "create_exam",
             element: <CreateExamPage />,
+          },
+          {
+            path: "monitorexam/:id",
+            element: <MonitorExamPage />,
           },
         ],
       },

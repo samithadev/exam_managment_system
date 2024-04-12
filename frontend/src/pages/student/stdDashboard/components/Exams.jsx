@@ -5,11 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 function Exams() {
-  const [exams, setExams] = useState([]);
+  const [examStatus, setExamstatus] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredExams, setFilteredExams] = useState([]);
+  const [filteredExamStatus, setFilteredExamstatus] = useState([]);
   const [userId, setUserId] = useState();
-  const [enrollmentStatus, setEnrollmentStatus] = useState({});
 
   const navigate = useNavigate();
 
@@ -22,22 +21,11 @@ function Exams() {
 
     const fetchExamsAndStatus = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/exam/allExams");
-        setExams(response.data);
-        setFilteredExams(response.data);
-
-        const statusPromises = response.data.map((exam) =>
-          axios.get(
-            `http://localhost:8000/exam/${exam.exam_id}/enrollment/${userId}`
-          )
+        const response = await axios.get(
+          `http://localhost:8000/exam/user/${userId}`
         );
-        const statuses = await Promise.all(statusPromises);
-        const enrollmentStatuses = {};
-        statuses.forEach((status, index) => {
-          enrollmentStatuses[response.data[index].exam_id] =
-            status.data.enrollStatus;
-        });
-        setEnrollmentStatus(enrollmentStatuses);
+        setExamstatus(response.data);
+        setFilteredExamstatus(response.data);
       } catch (error) {
         console.log("no fetching exams and enrollment statuses:");
       }
@@ -47,19 +35,40 @@ function Exams() {
   }, [userId]);
 
   const handleSearch = () => {
-    setFilteredExams(
-      exams.filter((exam) =>
+    filteredExamStatus(
+      examStatus.filter((exam) =>
         exam.exam_name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
   };
 
-  const handleExamClick = (examId) => {
-    const confirmEnroll = window.confirm(
-      "Are you sure you want to enroll in this exam?"
-    );
-    if (confirmEnroll) {
-      enrollUser(examId);
+  const handleExamClick = async (examId) => {
+    try {
+      // Check if the user is already enrolled in the exam
+      const response = await axios.get(
+        `http://localhost:8000/examenroll/${userId}/${examId}`
+      );
+
+      console.log(response.data.enrollStatus);
+      const status = response.data.enrollStatus;
+
+      if (status.length == 0) {
+        const confirmEnroll = window.confirm(
+          "Are you sure you want to enroll in this exam?"
+        );
+        if (confirmEnroll) {
+          enrollUser(examId);
+        }
+      }
+      if (status[0].enrollStatus == "pending") {
+        navigate(`/student/exam/${examId}`);
+      }
+
+      if (status[0].enrollStatus == "attended") {
+        navigate(`/student/resultview/${examId}`);
+      }
+    } catch (error) {
+      console.error("Error checking enrollment status:", error);
     }
   };
 
@@ -110,19 +119,17 @@ function Exams() {
             </tr>
           </thead>
           <tbody>
-            {filteredExams.map((exam) => (
+            {filteredExamStatus.map((exam) => (
               <tr
                 key={exam.exam_id}
                 onClick={() => handleExamClick(exam.exam_id)}
                 className=" cursor-pointer hover:bg-slate-200"
               >
                 <td className=" border-solid border-2 p-3">{exam.exam_name}</td>
-                <td className=" border-solid border-2 p-3">
-                  {exam.createDate}
-                </td>
+                <td className=" border-solid border-2 p-3">{exam.examDate}</td>
                 <td className=" border-solid border-2 p-3">{exam.duration}</td>
                 <td className=" border-solid border-2 p-3">
-                  {enrollmentStatus[exam.exam_id]}
+                  {exam.enrollStatus}
                 </td>
               </tr>
             ))}

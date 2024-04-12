@@ -39,6 +39,10 @@ function LoginPage() {
     }
   };
 
+  const handleRegisterClick = () => {
+    navigate("/register");
+  };
+
   return (
     <div className="flex items-center justify-center w-screen h-screen">
       <div className="border-solid border-4 p-20 ">
@@ -73,6 +77,12 @@ function LoginPage() {
             className=" p-2 bg-blue-600 text-white rounded-lg w-full my-4"
           >
             LogIn
+          </button>
+          <button
+            onClick={handleRegisterClick}
+            className=" p-2 bg-red-600 text-white rounded-lg w-full "
+          >
+            Register
           </button>
         </form>
       </div>

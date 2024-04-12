@@ -65,8 +65,8 @@ function ExamView() {
   const handleSave = async () => {
     try {
       // Update the status in the exam_enrollment table to 'pending'
-      await axios.post(`http://localhost:8000/examenroll/${userId}/${examId}`, {
-        status: "pending",
+      await axios.put(`http://localhost:8000/examenroll/${userId}/${examId}`, {
+        enrollStatus: "pending",
       });
 
       alert("Answers Saved!");
@@ -76,7 +76,18 @@ function ExamView() {
     }
   };
 
-  const handleComplete = (req, res) => {};
+  const handleComplete = async (req, res) => {
+    try {
+      await axios.put(`http://localhost:8000/examenroll/${userId}/${examId}`, {
+        enrollStatus: "attended",
+      });
+
+      alert("Test Completed!");
+      navigate(`/student/dashboard`);
+    } catch (error) {
+      console.error("Error submitting answers:", error);
+    }
+  };
 
   return (
     <div className=" flex flex-col items-center justify-center h-screen">
