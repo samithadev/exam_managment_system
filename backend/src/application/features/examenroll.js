@@ -6,26 +6,60 @@ const newEnroll = async (req, res) => {
     const { status } = req.body;
   
     try {
-      // Check if the enrollment already exists
-      const existingEnrollment = await sql_connection.query(
-        'SELECT * FROM exam_enrollment WHERE userId = ? ',
-        [userId]
-      );
-
-      if (!existingEnrollment) {
-        // If the enrollment does not exist, create a new one
+        // Insert the new enrollment
         await sql_connection.query(
-          'INSERT INTO exam_enrollment (userId, examId, enrollStatus) VALUES (?, ?, ?)',
-          [userId, examId, status]
+            'INSERT INTO exam_enrollment (userId, examId, enrollStatus) VALUES (?, ?, ?)',
+            [userId, examId, status]
         );
         res.status(201).json({ message: 'New enrollment created successfully' });
-      } else {
-        res.status(200).json({ message: 'Enrollment already exists' });
-      }
     } catch (error) {
-      console.error('Error creating new enrollment:', error);
-      res.status(500).json({ message: 'Failed to create new enrollment' });
+        console.error('Error creating new enrollment:', error);
+        res.status(500).json({ message: 'Failed to create new enrollment' });
     }
 }
 
-module.exports = newEnroll;
+const updateEnroll = async (req,res) => {
+
+    const { userId, examId } = req.params;
+    const { grade, points, passfailStatus, enrollStatus } = req.body;
+  
+    try {
+        // Update the enrollment
+        await sql_connection.query(
+            'UPDATE exam_enrollment SET grade = ?, points = ?, passfailStatus = ?, enrollStatus = ? WHERE userId = ? AND examId = ?',
+            [grade, points, passfailStatus, enrollStatus, userId, examId]
+        );
+        res.status(200).json({ message: 'Enrollment updated successfully' });
+    } catch (error) {
+        console.error('Error updating enrollment:', error);
+        res.status(500).json({ message: 'Failed to update enrollment' });
+    }
+}
+
+const checkEnroll = async (req, res) => {
+    const { examId, userId } = req.params;
+
+    try {
+       
+        const enrollStatus = await new Promise((resolve, reject) => {
+            sql_connection.query('SELECT enrollStatus FROM exam_enrollment WHERE examId = ? AND userId = ?',[examId, userId], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+
+        if (enrollStatus) {
+          res.json({ enrollStatus });
+        } else {
+          res.status(404).json({ message: "User not enrolled in exam" });
+        }
+      } catch (error) {
+        console.error("Error checking enrollment status:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+}
+
+module.exports = {newEnroll, checkEnroll, updateEnroll}

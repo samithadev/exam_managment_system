@@ -171,6 +171,30 @@ const allExams = async (req,res) => {
   }
 }
 
+//Get specific exams
+const getExam = async (req,res) => {
+  try{
+    const {id:exam_id }= req.params;
+    // Fetch specific exam from the database
+    const getExam = await new Promise((resolve, reject) => {
+      sql_connection.query(
+        "SELECT * FROM exam WHERE exam_id = ?",[exam_id],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+    res.status(200).json(getExam);
+
+  } catch{
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 //get exam enroll status
 const getEnrollStatus = async (req,res) => {
   try {
@@ -234,4 +258,25 @@ const deleteExam = async (req, res) => {
     }
   };
 
-module.exports = { createExam, teacherAllExams, deleteExam ,allExams, getEnrollStatus};
+  const getExamsStatus = async (req, res) => {
+    const {userId} = req.params;
+
+    const allexamstatus = await new Promise((resolve, reject) => {
+      sql_connection.query(
+        "SELECT e.exam_id, e.exam_name, e.duration, e.examDate, ee.enrollStatus FROM exam e LEFT JOIN exam_enrollment ee ON e.exam_id = ee.examId AND ee.userId = ?",
+        [userId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+
+    res.json(allexamstatus)
+
+  }
+
+module.exports = { createExam, teacherAllExams, deleteExam ,allExams, getEnrollStatus, getExam, getExamsStatus};

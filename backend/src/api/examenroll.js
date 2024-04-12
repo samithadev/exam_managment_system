@@ -1,8 +1,8 @@
 const express = require('express');
-const newEnroll = require('../application/features/examenroll');
+const {newEnroll, checkEnroll, updateEnroll} = require('../application/features/examenroll');
 
 const examenrollRouter = express.Router();
 
-examenrollRouter.route("/:userId/:examId").post(newEnroll)
+examenrollRouter.route("/:userId/:examId").post(newEnroll).get(checkEnroll).put(updateEnroll)
 
 module.exports = examenrollRouter;
