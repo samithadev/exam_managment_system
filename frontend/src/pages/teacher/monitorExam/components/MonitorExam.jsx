@@ -5,6 +5,8 @@ import { useParams, Link } from "react-router-dom";
 function MonitorExam() {
   const [exam, setExam] = useState([]);
   const { id: examId } = useParams();
+  const [enrolledStudents, setEnrolledStudents] = useState([]);
+  const [attendedCount, setAttendedCount] = useState(0);
 
   useEffect(() => {
     const fetchExamDetails = async () => {
@@ -20,7 +22,24 @@ function MonitorExam() {
         );
 
         setExam(response.data[0]);
-        console.log(exam);
+
+        // Fetch enrolled students
+        const enrolledResponse = await axios.get(
+          `http://localhost:8000/examenroll/${examId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // Count the number of students who have attended
+        const attended = enrolledResponse.data.filter(
+          (student) => student.enrollStatus === "attended"
+        );
+
+        setEnrolledStudents(enrolledResponse.data);
+        setAttendedCount(attended.length);
       } catch (error) {
         console.error("Error fetching exam details:", error.response.data);
       }
@@ -49,7 +68,9 @@ function MonitorExam() {
           <div className=" border-solid border-2 p-3">
             <h1 className=" text-2xl">Exam Completed</h1>
             <div className=" p-10">
-              <text className=" text-8xl">15/20</text>
+              <text className=" text-8xl">
+                {attendedCount}/{enrolledStudents.length}
+              </text>
               <h1 className=" text-xl mt-5">Time Left:</h1>
             </div>
           </div>
@@ -64,18 +85,19 @@ function MonitorExam() {
         <div className=" border-solid border-2 w-1/2 p-3">
           <h1 className=" text-2xl">Attending Student List</h1>
           <ul>
-            <li className=" border-solid border-2 p-4 text-lg my-4">
-              <div className=" flex justify-between">
-                <h1>Student 1</h1>
-                <h1 className=" font-bold text-green-500">Completed</h1>
-              </div>
-            </li>
-            <li className=" border-solid border-2 p-4 text-lg my-4">
-              Student 2
-            </li>
-            <li className=" border-solid border-2 p-4 text-lg my-4">
-              Student 3
-            </li>
+            {enrolledStudents.map((student, index) => (
+              <li
+                key={index}
+                className=" border-solid border-2 p-4 text-lg my-4"
+              >
+                <div className=" flex justify-between">
+                  <h1>{student.userId}</h1>
+                  <h1 className=" font-bold text-green-500">
+                    {student.enrollStatus}
+                  </h1>
+                </div>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

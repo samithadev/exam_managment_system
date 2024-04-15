@@ -1,8 +1,9 @@
 const express = require('express');
-const { getAnswers } = require('../application/features/answers');
+const { getAnswers, getAnsStatus } = require('../application/features/answers');
 
 const answerRouter = express.Router();
 
 answerRouter.route("/:id").get(getAnswers)
+answerRouter.route("/:questionId/:answerId").get(getAnsStatus)
 
 module.exports = answerRouter;

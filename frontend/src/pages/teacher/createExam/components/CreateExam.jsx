@@ -15,7 +15,7 @@ function CreateExam() {
   ]);
 
   const location = useLocation();
-  const { exam } = location.state;
+  const { exam } = location.state ?? { exam: null };
   const navigate = useNavigate();
 
   useEffect(() => {

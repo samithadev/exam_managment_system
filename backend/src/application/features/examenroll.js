@@ -36,13 +36,13 @@ const updateEnroll = async (req,res) => {
     }
 }
 
-const checkEnroll = async (req, res) => {
+const getUserEnroll = async (req, res) => {
     const { examId, userId } = req.params;
 
     try {
        
         const enrollStatus = await new Promise((resolve, reject) => {
-            sql_connection.query('SELECT enrollStatus FROM exam_enrollment WHERE examId = ? AND userId = ?',[examId, userId], (error, results) => {
+            sql_connection.query('SELECT * FROM exam_enrollment WHERE examId = ? AND userId = ?',[examId, userId], (error, results) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -52,7 +52,7 @@ const checkEnroll = async (req, res) => {
         });
 
         if (enrollStatus) {
-          res.json({ enrollStatus });
+          res.json(enrollStatus );
         } else {
           res.status(404).json({ message: "User not enrolled in exam" });
         }
@@ -62,4 +62,29 @@ const checkEnroll = async (req, res) => {
       }
 }
 
-module.exports = {newEnroll, checkEnroll, updateEnroll}
+const getEnrollments = async (req,res) => {
+    const {examId} = req.params;
+
+    try{
+        const allEnrollments = await new Promise((resolve, reject) => {
+            sql_connection.query('SELECT * FROM exam_enrollment WHERE examId = ?',[examId], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    
+        if (allEnrollments) {
+            res.json(allEnrollments );
+          } else {
+            res.status(404).json({ message: "Exam not have enrolles" });
+          }
+    }catch(error){
+        res.status(500).json({ message: "Internal server error" });
+    }
+
+}
+
+module.exports = {newEnroll, getUserEnroll, updateEnroll, getEnrollments}

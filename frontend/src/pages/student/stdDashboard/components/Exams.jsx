@@ -49,8 +49,7 @@ function Exams() {
         `http://localhost:8000/examenroll/${userId}/${examId}`
       );
 
-      console.log(response.data.enrollStatus);
-      const status = response.data.enrollStatus;
+      const status = response.data;
 
       if (status.length == 0) {
         const confirmEnroll = window.confirm(
