@@ -14,6 +14,7 @@ function ExamView() {
 
   const navigate = useNavigate();
 
+  //get questions and answers and set those tho questions and answers array
   useEffect(() => {
     // Decode the token to get userId
     const token = localStorage.getItem("token");
@@ -43,6 +44,28 @@ function ExamView() {
 
     fetchQuestionsAndAnswers();
   }, []);
+
+  useEffect(() => {
+    const fetchExistingAnswers = async () => {
+      try {
+        const studentAnswersResponse = await axios.get(
+          `http://localhost:8000/studentAnswers/${userId}/${examId}`
+        );
+        const studentAnswers = studentAnswersResponse.data;
+
+        const defaultSelectedAnswers = {};
+        studentAnswers.forEach((answer) => {
+          defaultSelectedAnswers[answer.questionId] = answer.answerId;
+        });
+
+        setSelectedAnswers(defaultSelectedAnswers);
+      } catch (error) {
+        console.error("Error fetching existing answers:", error);
+      }
+    };
+
+    fetchExistingAnswers();
+  }, [userId, examId]);
 
   const handleNextQuestion = () => {
     setCurrentQuestionIndex((prevIndex) =>
@@ -162,29 +185,6 @@ function ExamView() {
       console.error("Error submitting answers:", error);
     }
   };
-
-  // const handleSave = async (req, res) => {
-  //   try {
-  //     const studentAnswers = questions.map((question) => ({
-  //       userId,
-  //       examId: question.examId,
-  //       questionId: question.question_Id,
-  //       answerId: selectedAnswers[question.question_Id] || null,
-  //       ansStatus: ansStatus[question.question_Id] === 1 ? "correct" : "wrong",
-  //     }));
-
-  //     await axios.put("http://localhost:8000/studentAnswers", studentAnswers);
-
-  //     await axios.put(`http://localhost:8000/examenroll/${userId}/${examId}`, {
-  //       enrollStatus: "pending",
-  //     });
-
-  //     alert("Answers saved!");
-  //     navigate(`/student/dashboard`);
-  //   } catch (error) {
-  //     console.error("Error submitting answers:", error);
-  //   }
-  // };
 
   const handleSave = async () => {
     try {
