@@ -1,36 +1,81 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut, Line, Pie } from "react-chartjs-2";
+import axios from "axios";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function ExamOverview() {
+  const [enrollments, setEnrollments] = useState([]);
   const { id: examId } = useParams();
+
+  useEffect(() => {
+    const examEnrollments = async () => {
+      try {
+        const enrollments = await axios.get(
+          `http://localhost:8000/examenroll/${examId}`
+        );
+        const fetchedEnrollments = enrollments.data;
+        setEnrollments(fetchedEnrollments);
+      } catch (error) {
+        console.log("Error fetching data", error);
+      }
+    };
+
+    examEnrollments();
+  }, [examId]);
+
+  // Calculate average point
+  const totalPoints = enrollments.reduce((acc, curr) => acc + curr.points, 0);
+  const averagePoint = totalPoints / enrollments.length;
+
+  // Filter users with points higher than average
+  const usersAboveAverage = enrollments.filter(
+    (enrollment) => enrollment.points >= averagePoint
+  );
+
+  const usersBelowAverage = enrollments.filter(
+    (enrollment) => enrollment.points < averagePoint
+  );
+
+  console.log(enrollments);
+
+  // Calculate grade counts
+  const gradeCounts = enrollments.reduce((acc, curr) => {
+    const grade = curr.grade.toUpperCase(); // Assuming grade is a string like 'A', 'B', 'C', 'F'
+    acc[grade] = (acc[grade] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Calculate total students
+  const totalStudents = enrollments.length;
+
+  // Calculate percentages
+  const gradePercentages = Object.values(gradeCounts).map(
+    (count) => (count / totalStudents) * 100
+  );
 
   const data1 = {
     datasets: [
       {
-        data: [12, 19, 3, 5, 2, 3],
+        data: gradePercentages,
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
           "rgba(54, 162, 235, 0.6)",
           "rgba(255, 206, 86, 0.6)",
           "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-          "rgba(255, 159, 64, 0.6)",
         ],
         borderColor: [
           "rgba(255, 99, 132, 1)",
           "rgba(54, 162, 235, 1)",
           "rgba(255, 206, 86, 1)",
           "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
         ],
         borderWidth: 1,
       },
     ],
+    labels: ["A", "B", "C", "F"], // Labels for the grades
   };
 
   const data2 = {
@@ -79,10 +124,12 @@ function ExamOverview() {
               </tr>
             </thead>
             <tbody>
-              <tr className=" cursor-pointer ">
-                <td className=" border-solid border-2 p-3">1</td>
-                <td className=" border-solid border-2 p-3">2</td>
-              </tr>
+              {usersAboveAverage.map((user) => (
+                <tr key={user.userId} className=" cursor-pointer ">
+                  <td className=" border-solid border-2 p-3">{user.userId}</td>
+                  <td className=" border-solid border-2 p-3">{user.points}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -97,10 +144,12 @@ function ExamOverview() {
               </tr>
             </thead>
             <tbody>
-              <tr className=" cursor-pointer ">
-                <td className=" border-solid border-2 p-3">1</td>
-                <td className=" border-solid border-2 p-3">2</td>
-              </tr>
+              {usersBelowAverage.map((user) => (
+                <tr key={user.userId} className=" cursor-pointer ">
+                  <td className=" border-solid border-2 p-3">{user.userId}</td>
+                  <td className=" border-solid border-2 p-3">{user.points}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
