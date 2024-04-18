@@ -24,8 +24,18 @@ function Exams() {
         const response = await axios.get(
           `http://localhost:8000/exam/user/${userId}`
         );
-        setExamstatus(response.data);
-        setFilteredExamstatus(response.data);
+        setExamstatus(
+          response.data.map((exam) => ({
+            ...exam,
+            formattedDate: new Date(exam.examDate).toLocaleString(), // Formatting the date
+          }))
+        );
+        setFilteredExamstatus(
+          response.data.map((exam) => ({
+            ...exam,
+            formattedDate: new Date(exam.examDate).toLocaleString(), // Formatting the date
+          }))
+        );
       } catch (error) {
         console.log("no fetching exams and enrollment statuses:");
       }
@@ -42,7 +52,18 @@ function Exams() {
     );
   };
 
-  const handleExamClick = async (examId) => {
+  const handleExamClick = async (examId, formattedDate) => {
+    const currentDateTime = new Date();
+
+    // Convert formattedDate to a Date object for comparison
+    const examStartDate = new Date(formattedDate);
+
+    if (currentDateTime < examStartDate) {
+      // Exam has not started yet
+      alert("Exam has not started yet.");
+      return;
+    }
+
     try {
       // Check if the user is already enrolled in the exam
       const response = await axios.get(
@@ -50,6 +71,7 @@ function Exams() {
       );
 
       const status = response.data;
+      console.log(status);
 
       if (status.length == 0) {
         const confirmEnroll = window.confirm(
@@ -84,7 +106,7 @@ function Exams() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen items-center pt-48">
+    <div className="flex flex-col h-screen w-screen items-center pt-16">
       <div className=" w-3/4">
         <div className=" flex w-full justify-between mb-4">
           <div className="flex gap-2">
@@ -112,8 +134,8 @@ function Exams() {
           <thead className=" bg-blue-100">
             <tr>
               <th className=" border-solid border-2 p-5">Exam Name</th>
-              <th className=" border-solid border-2">Start Date</th>
-              <th className=" border-solid border-2">Duration</th>
+              <th className=" border-solid border-2">Start Date & Time</th>
+              <th className=" border-solid border-2">Duration (min)</th>
               <th className=" border-solid border-2">Status</th>
             </tr>
           </thead>
@@ -121,11 +143,15 @@ function Exams() {
             {filteredExamStatus.map((exam) => (
               <tr
                 key={exam.exam_id}
-                onClick={() => handleExamClick(exam.exam_id)}
+                onClick={() =>
+                  handleExamClick(exam.exam_id, exam.formattedDate)
+                }
                 className=" cursor-pointer hover:bg-slate-200"
               >
                 <td className=" border-solid border-2 p-3">{exam.exam_name}</td>
-                <td className=" border-solid border-2 p-3">{exam.examDate}</td>
+                <td className=" border-solid border-2 p-3">
+                  {exam.formattedDate}
+                </td>
                 <td className=" border-solid border-2 p-3">{exam.duration}</td>
                 <td className=" border-solid border-2 p-3">
                   {exam.enrollStatus}

@@ -19,8 +19,18 @@ function AllExams() {
             Authorization: `Bearer ${token}`,
           },
         });
-        setExams(response.data);
-        setFilteredExams(response.data);
+        setExams(
+          response.data.map((exam) => ({
+            ...exam,
+            formattedDate: new Date(exam.examDate).toLocaleString(), // Formatting the date
+          }))
+        );
+        setFilteredExams(
+          response.data.map((exam) => ({
+            ...exam,
+            formattedDate: new Date(exam.examDate).toLocaleString(), // Formatting the date
+          }))
+        );
       } catch (error) {
         console.error("Error fetching exams:", error.response.data);
       }
@@ -39,16 +49,14 @@ function AllExams() {
 
   const handleExamClick = (examId, status) => {
     if (status === "draft") {
-      const exam = exams.find((exam) => exam.exam_id === examId);
-      navigate("/teacher/create_exam", { state: { exam } });
-      console.log(exam);
+      navigate(`/teacher/update_exam/${examId}`);
     } else {
       navigate(`/teacher/monitorexam/${examId}`);
     }
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen items-center pt-48">
+    <div className="flex flex-col h-screen w-screen items-center pt-16">
       <div className=" w-3/4">
         <div className=" flex w-full justify-between mb-4">
           <div className="flex gap-2">
@@ -91,7 +99,9 @@ function AllExams() {
                 className=" cursor-pointer hover:bg-slate-200"
               >
                 <td className=" border-solid border-2 p-3">{exam.exam_name}</td>
-                <td className=" border-solid border-2 p-3">{exam.examDate}</td>
+                <td className=" border-solid border-2 p-3">
+                  {exam.formattedDate}
+                </td>
                 <td className=" border-solid border-2 p-3">{exam.status}</td>
               </tr>
             ))}

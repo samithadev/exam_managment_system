@@ -76,9 +76,13 @@ function MonitorExam() {
           </div>
 
           <div className=" border-solid border-2 p-3 mt-5">
-            <h1 className=" text-xl mt-3">Exam started time: </h1>
+            <h1 className=" text-xl mt-3">
+              Exam started time: {new Date(exam.examDate).toLocaleTimeString()}{" "}
+            </h1>
             <h1 className=" text-xl mt-3">Exam ending time: </h1>
-            <p className=" text-xl mt-3">Exam Date: {exam.examDate}</p>
+            <p className=" text-xl mt-3">
+              Exam Date: {new Date(exam.examDate).toLocaleDateString()}
+            </p>
           </div>
         </div>
 
@@ -102,10 +106,16 @@ function MonitorExam() {
         </div>
       </div>
 
-      <div className=" flex items-end justify-end">
+      <div className=" flex items-end justify-end gap-9 mx-10">
         <button className=" p-3 text-white bg-red-500 rounded-xl w-auto">
           End Exam
         </button>
+        <Link
+          to={`/teacher/exam_overview/${examId}`}
+          className=" p-3 text-white bg-blue-500 rounded-xl w-auto"
+        >
+          Exam Overview
+        </Link>
       </div>
     </div>
   );

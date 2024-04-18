@@ -1,13 +1,26 @@
-import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { validateInputs } from "./createExamValidations";
+import React, { useEffect, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
-function CreateExam() {
+function UpdateExam() {
+  const { id: examId } = useParams();
   const [examName, setExamName] = useState("");
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [date, setDate] = useState("");
-  const [questions, setQuestions] = useState([]);
+
+  const navigate = useNavigate();
+
+  const [questions, setQuestions] = useState([
+    {
+      questionText: "",
+      answers: [
+        { text: "", isCorrect: true },
+        { text: "", isCorrect: false },
+        { text: "", isCorrect: false },
+        { text: "", isCorrect: false },
+      ],
+    },
+  ]);
   const [questionText, setQuestionText] = useState("");
   const [answers, setAnswers] = useState([
     { text: "", isCorrect: false },
@@ -15,6 +28,81 @@ function CreateExam() {
     { text: "", isCorrect: false },
     { text: "", isCorrect: false },
   ]);
+
+  useEffect(() => {
+    const fetchExamDetails = async () => {
+      const token = localStorage.getItem("token");
+
+      try {
+        //get exam details and set exam details to form
+        const examDetailsResponse = await fetch(
+          `http://localhost:8000/exam/${examId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!examDetailsResponse.ok) {
+          throw new Error("Failed to fetch exam details");
+        }
+
+        const examDetails = await examDetailsResponse.json();
+
+        const durationHours = Math.floor(examDetails[0].duration / 60);
+        const durationMinutes = examDetails[0].duration % 60;
+
+        setExamName(examDetails[0].exam_name);
+        setHours(durationHours);
+        setMinutes(durationMinutes);
+        setDate(new Date(examDetails[0].examDate).toISOString().slice(0, 16));
+
+        //get all question details
+        const questionsResponse = await fetch(
+          `http://localhost:8000/question/allquestions/${examId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!questionsResponse.ok) {
+          throw new Error("Failed to fetch questions and answers");
+        }
+
+        const allquestionsAndanswers = await questionsResponse.json();
+
+        const groupedQuestions = allquestionsAndanswers.reduce((acc, item) => {
+          const questionIndex = acc.findIndex(
+            (q) => q.questionId === item.question_Id
+          );
+          const answer = { text: item.answer, isCorrect: item.status === 1 };
+
+          if (questionIndex > -1) {
+            acc[questionIndex].answers.push(answer);
+          } else {
+            acc.push({
+              questionId: item.question_Id,
+              questionText: item.question,
+              answers: [answer],
+            });
+          }
+
+          return acc;
+        }, []);
+
+        setQuestions(groupedQuestions);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+
+    fetchExamDetails();
+  }, [examId]);
 
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
 
@@ -47,8 +135,6 @@ function CreateExam() {
     setSelectedQuestionIndex(null);
   };
 
-  const navigate = useNavigate();
-
   const handleAddQuestion = () => {
     const newQuestion = { questionText, answers };
     setQuestions([...questions, newQuestion]);
@@ -72,81 +158,21 @@ function CreateExam() {
     newAnswers[index].isCorrect = !newAnswers[index].isCorrect;
     setAnswers(newAnswers);
   };
+
   const handleDeleteQuestion = (index) => {
     const updatedQuestions = [...questions];
     updatedQuestions.splice(index, 1);
     setQuestions(updatedQuestions);
   };
 
-  const handlePublishExam = async () => {
-    // Calculate total duration in minutes
-    const totalDuration = parseInt(hours) * 60 + parseInt(minutes);
-
-    const validationError = validateInputs(
-      examName,
-      totalDuration,
-      date,
-      questions
-    );
-    if (validationError) {
-      alert(validationError);
-      return;
-    }
-    try {
-      const token = localStorage.getItem("token");
-
-      // Map questions and answers to the format expected by the backend
-      const formattedQuestions = questions.map((q) => ({
-        questionText: q.questionText,
-        answers: q.answers.map((a) => ({
-          text: a.text,
-          isCorrect: a.isCorrect,
-        })),
-      }));
-
-      // Calculate total duration in minutes
-      const totalDuration = parseInt(hours) * 60 + parseInt(minutes);
-
-      // Insert the exam into the exam_table
-      const res = await fetch("http://localhost:8000/exam", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          exam_name: examName,
-          duration: totalDuration,
-          examDate: date,
-          status: "published",
-          questions: formattedQuestions,
-        }),
-      });
-
-      // Display success message or redirect to exams page
-      alert("Exam Published successfully");
-      navigate("/teacher/dashboard");
-    } catch (error) {
-      console.error("Error publishing exam:", error);
-    }
-  };
-
   const handleSaveExam = async () => {
     // Calculate total duration in minutes
     const totalDuration = parseInt(hours) * 60 + parseInt(minutes);
 
-    const validationError = validateInputs(
-      examName,
-      totalDuration,
-      date,
-      questions
-    );
-    if (validationError) {
-      alert(validationError);
-      return;
-    }
     try {
       const token = localStorage.getItem("token");
+
+      console.log(questions);
 
       // Map questions and answers to the format expected by the backend
       const formattedQuestions = questions.map((q) => ({
@@ -157,8 +183,8 @@ function CreateExam() {
         })),
       }));
 
-      // Insert the exam into the exam_table
-      const res = await fetch("http://localhost:8000/exam", {
+      // Insert the exam
+      const res = await fetch(`http://localhost:8000/exam/${examId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,6 +201,49 @@ function CreateExam() {
 
       // Display success message or redirect to exams page
       alert("Exam Saved successfully");
+      navigate("/teacher/dashboard");
+      console.log(res);
+    } catch (error) {
+      console.error("Error save exam:", error);
+    }
+  };
+
+  const handlePublishExam = async () => {
+    // Calculate total duration in minutes
+    const totalDuration = parseInt(hours) * 60 + parseInt(minutes);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      console.log(questions);
+
+      // Map questions and answers to the format expected by the backend
+      const formattedQuestions = questions.map((q) => ({
+        questionText: q.questionText,
+        answers: q.answers.map((a) => ({
+          text: a.text,
+          isCorrect: a.isCorrect,
+        })),
+      }));
+
+      // Insert the exam
+      const res = await fetch(`http://localhost:8000/exam/${examId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          exam_name: examName,
+          duration: totalDuration,
+          examDate: date,
+          status: "published",
+          questions: formattedQuestions,
+        }),
+      });
+
+      // Display success message or redirect to exams page
+      alert("Exam Published successfully");
       navigate("/teacher/dashboard");
       console.log(res);
     } catch (error) {
@@ -204,7 +273,6 @@ function CreateExam() {
             className="w-full border-gray-300 border rounded-md p-2"
             value={examName}
             onChange={(e) => setExamName(e.target.value)}
-            required
           />
         </div>
         <div className="mt-4">
@@ -242,7 +310,6 @@ function CreateExam() {
             className="w-full border-gray-300 border rounded-md p-2"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            required
           />
         </div>
 
@@ -331,7 +398,6 @@ function CreateExam() {
                 className="border-gray-300 border rounded-md p-2 mr-2"
                 value={answer.text}
                 onChange={(e) => handleAddAnswer(index, e.target.value)}
-                // onClick={() => handleSelectCorrectAnswer(index)}
               />
               <input
                 type="checkbox"
@@ -362,4 +428,4 @@ function CreateExam() {
   );
 }
 
-export default CreateExam;
+export default UpdateExam;

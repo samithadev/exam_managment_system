@@ -263,7 +263,7 @@ const deleteExam = async (req, res) => {
 
     const allexamstatus = await new Promise((resolve, reject) => {
       sql_connection.query(
-        "SELECT e.exam_id, e.exam_name, e.duration, e.examDate, ee.enrollStatus FROM exam e LEFT JOIN exam_enrollment ee ON e.exam_id = ee.examId AND ee.userId = ?",
+        "SELECT e.exam_id, e.exam_name, e.duration, e.examDate, ee.enrollStatus FROM exam e LEFT JOIN exam_enrollment ee ON e.exam_id = ee.examId AND ee.userId = ? WHERE e.status = 'published'",
         [userId],
         (error, results) => {
           if (error) {
@@ -279,4 +279,123 @@ const deleteExam = async (req, res) => {
 
   }
 
-module.exports = { createExam, teacherAllExams, deleteExam ,allExams, getEnrollStatus, getExam, getExamsStatus};
+  const updateExam = async (req, res) => {
+    try {
+      const { exam_name, duration, examDate, status, questions } = req.body;
+      const { id: examId } = req.params;  
+
+      // Verify user's authorization from JWT token
+      const token = req.headers.authorization.split(" ")[1];
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      const user_email = decodedToken.email;
+  
+      // Fetch user's role from their email
+      const user = await new Promise((resolve, reject) => {
+        sql_connection.query(
+          "SELECT * FROM user WHERE email = ?",
+          [user_email],
+          (error, results) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(results[0]);
+            }
+          }
+        );
+      });
+  
+      if (!user || user.role !== 1) { // Assuming role_id 1 is for teachers
+        return res.status(403).json({ message: "Unauthorized. Only teachers can update exams." });
+      }
+  
+      // Update the exam record in the database
+      await new Promise((resolve, reject) => {
+        sql_connection.query(
+          "UPDATE exam SET exam_name = ?, duration = ?, examDate = ?, status = ? WHERE exam_id = ?",
+          [exam_name, duration, examDate, status, examId],
+          (error, results) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(results);
+            }
+          }
+        );
+      });
+
+      // Delete all answers
+      await new Promise((resolve, reject) => {
+        sql_connection.query(
+          "DELETE  FROM answers WHERE questionId IN (SELECT question_Id FROM questions WHERE examId = ?)",
+          [examId],
+          (error, results) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(results);
+            }
+          }
+        );
+      });
+
+      // Delete all questions
+      await new Promise((resolve, reject) => {
+        sql_connection.query(
+          "Delete from questions where examId = ?",
+          [examId],
+          (error, results) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(results);
+            }
+          }
+        );
+      });
+
+      // Process each new question
+      for (const question of questions) {
+        const { questionText, answers } = question;
+
+        const insertQuestion = await new Promise((resolve, reject) => {
+          sql_connection.query(
+            "INSERT INTO questions (examId, question) VALUES (?, ?)",
+            [examId, questionText],
+            (error, results) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(results);
+              }
+            }
+          );
+        });
+  
+        const questionId = insertQuestion.insertId;
+  
+        for (const answer of answers) {
+          const insertAnswer = await new Promise((resolve, reject) => {
+            sql_connection.query(
+              "INSERT INTO answers (questionId, answer, status) VALUES (?, ?, ?)",
+              [questionId, answer.text, answer.isCorrect ? 1 : 0],
+              (error, results) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  resolve(results);
+                }
+              }
+            );
+          });
+        }
+      }
+      res.status(201).json({ message: "Exam saved successfully" });
+    } catch (error) {
+      console.error("Error updating exam:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+  
+
+module.exports = { createExam, teacherAllExams, deleteExam ,allExams, getEnrollStatus, getExam, getExamsStatus, updateExam};

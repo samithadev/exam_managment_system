@@ -12,6 +12,11 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!email.trim() || !password.trim()) {
+      alert("Please fill in all the required fields");
+      return;
+    }
+
     try {
       const response = await axios.post("http://localhost:8000/user/login", {
         email,
@@ -34,6 +39,7 @@ function LoginPage() {
       // Handle successful login, e.g., redirect to dashboard
       alert("login successfull!!");
     } catch (error) {
+      alert("Not registerd User!");
       console.error("Error logging in:", error.response.data);
       // Handle error, e.g., show an error message
     }
@@ -54,7 +60,6 @@ function LoginPage() {
             id="email"
             className=" my-4 border-solid border-2 p-2"
             placeholder="Email Address"
-            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -66,7 +71,6 @@ function LoginPage() {
             id="password"
             className=" my-4 border-solid border-2 p-2"
             placeholder="Password"
-            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

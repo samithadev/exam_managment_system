@@ -12,6 +12,11 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!email.trim() || !password.trim() || !roleName.trim()) {
+      alert("Please fill in all the required fields");
+      return;
+    }
+
     try {
       const response = await axios.post("http://localhost:8000/user", {
         email,

@@ -37,7 +37,7 @@ function ResultView() {
   }
   return (
     <div className=" flex flex-col items-center pt-20 h-screen w-screen gap-5">
-      <div className=" border-solid border-2 w-1/2 h-1/3 p-8">
+      <div className=" border-solid border-2 w-1/2  p-8">
         <h1 className=" text-3xl">Exam completed</h1>
 
         <h1

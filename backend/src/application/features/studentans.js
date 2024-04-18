@@ -89,4 +89,28 @@ const getAllUserAns =async (req,res) => {
   }
 }
 
-module.exports = { createUserAnswer, updateUserAnswer, getExistingAnswer, getAllUserAns };
+const getStudentAnswer =async (req,res) => {
+  const { questionId } = req.params;
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      sql_connection.query(
+        'SELECT * FROM studentanswers where questionId = ? ',
+        [questionId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+    res.json(result)
+  } catch (error) {
+    console.error('Error fetching student answer:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+} 
+
+module.exports = { createUserAnswer, updateUserAnswer, getExistingAnswer, getAllUserAns, getStudentAnswer };
